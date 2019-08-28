@@ -82,10 +82,13 @@ def get_meta_data(model, data, predictions):
         leaves_index = tree.apply(data)
         node_indicator = tree.decision_path(data)
 
+        counter = -1
+
         for prediction, index, path in zip(predictions, 
                                            leaves_index, 
                                            node_indicator):
 
+            counter += 1
             # meta_data_node            
             for ii, value in enumerate(path.toarray()[0]):
                 if ii > index:
@@ -133,8 +136,11 @@ def get_meta_data(model, data, predictions):
             if not index in meta_data_path.keys():
                 meta_data_path[index] = [thresholds, 
                                          features,
-                                         directions]   
-            
+                                         directions,
+                                         []] 
+              
+            meta_data_path[index][3].append(counter)
+
         break
   
     return meta_data_node, meta_data_path
@@ -152,6 +158,14 @@ def export_if_graphviz(model, data, predictions):
 
     return exporter.out_file.getvalue()
 
+
+def export_if_meta_data(model, data, predictions):
+    # get meta information
+    dummy, meta_data = get_meta_data(model, data, predictions)
+    
+    return meta_data
+
+
 def export_if_text(model, data, predictions):
     
     # get meta information
@@ -160,6 +174,8 @@ def export_if_text(model, data, predictions):
     print ('inf> features and thresholds for anomalies')
     for key, values in meta_data.items():
         print ('inf> +-- node index %s' % key)
+        print ('inf>  +-- data index: %s' % (','.join(map(str,values[3]))))
+        print ('inf>  +-- feature threshold:')
         
         for threshold, feature, direction in zip(values[0][:-1], 
                                       values[1][:-1],
@@ -167,7 +183,7 @@ def export_if_text(model, data, predictions):
             arrow = '<='
             if direction == False:
                 arrow = '> '
-            print ('inf>  +-- feature %s %s %s' % (feature, 
+            print ('inf>   +-- feature %s %s %s' % (feature, 
                                                  arrow,  
                                                  threshold))
          
