@@ -8,7 +8,8 @@ import numpy as np
 class _DOTIFTreeExporter(_DOTTreeExporter):
     def __init__(self, meta_data, out_file=None):
         super().__init__(out_file=out_file,
-                         filled=True)
+                         filled=True,
+                         node_ids=True)
 
         self.meta_data = meta_data
 
